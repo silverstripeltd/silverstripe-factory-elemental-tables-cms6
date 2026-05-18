@@ -22,10 +22,10 @@
     "email": "info@signify.co.nz"
   },
   "require": {
-    "silverstripe/cms": "^4 || ^5",
-    "dnadesign/silverstripe-elemental": "^4 || ^5",
-    "symbiote/silverstripe-gridfieldextensions": "^3 || ^4",
-    "undefinedoffset/sortablegridfield": "^2"
+    "silverstripe/cms": "^4 || ^5 || ^6",
+    "dnadesign/silverstripe-elemental": "^4 || ^5 || ^6",
+    "symbiote/silverstripe-gridfieldextensions": "^3 || ^4 || ^5" ,
+    "undefinedoffset/sortablegridfield": "^2 || ^3"
   },
   "autoload": {
     "psr-4": {
