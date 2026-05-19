@@ -6,20 +6,15 @@ use DNADesign\Elemental\Models\BaseElement;
 use Signify\Factory\Models\TableItem;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
-use SilverStripe\Forms\GridField\GridFieldAddNewButton;
-use SilverStripe\Forms\GridField\GridFieldConfig;
-use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
-use SilverStripe\Forms\GridField\GridFieldEditButton;
 use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\TextareaField;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\DataList;
 use SilverStripe\View\Requirements;
-use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use UndefinedOffset\SortableGridField\Forms\GridFieldSortableRows;
 
 class TableBlock extends BaseElement
@@ -81,14 +76,13 @@ class TableBlock extends BaseElement
         'LastRowIsFooter' => false,
     ];
 
-    public function getCMSFields()
+    public function getCMSFields(): FieldList
     {
         $fields = parent::getCMSFields();
 
         $tableDescription = HTMLEditorField::create(
             'TableDescription'
         );
-        $tableDescription->setEditorConfig('tableTinyMCE');
         $tableDescription->setRows(6);
         $fields->replaceField('TableDescription', $tableDescription);
 
@@ -207,7 +201,7 @@ class TableBlock extends BaseElement
      * Returns a preview of the selected settings for display in the CMS.
      * @return string
      */
-    public function getCMSPreview()
+    public function getCMSPreview(): string
     {
         if ($numRows = $this->TableItems()->count()) {
             $plurality = $numRows == 1 ? '' : 's';
@@ -220,7 +214,7 @@ class TableBlock extends BaseElement
     /**
      * {@inheritDoc}
      */
-    protected function provideBlockSchema()
+    protected function provideBlockSchema(): array
     {
         $blockSchema = parent::provideBlockSchema();
         $blockSchema['content'] = $this->getCMSPreview();
@@ -230,7 +224,7 @@ class TableBlock extends BaseElement
     /**
      * {@inheritDoc}
      */
-    public function getType()
+    public function getType(): string
     {
         return 'Table';
     }
@@ -238,12 +232,12 @@ class TableBlock extends BaseElement
     /**
      * {@inheritDoc}
      */
-    public function inlineEditable()
+    public function inlineEditable(): bool
     {
         return false;
     }
 
-    public function getTotalColumns()
+    public function getTotalColumns(): int
     {
         return $this->NumberOfColumns;
     }
@@ -253,11 +247,10 @@ class TableBlock extends BaseElement
      *
      * Not include the header and footer
      *
-     * @return ArrayList
+     * @return DataList
      */
-    public function getBody()
+    public function getBody(): DataList
     {
-       
         $body = $this->TableItems();
 
         if ($body->count() > 0) {

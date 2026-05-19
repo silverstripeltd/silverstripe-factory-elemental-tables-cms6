@@ -3,6 +3,7 @@
 namespace Signify\Factory\Models;
 
 use Signify\Factory\Models\TableBlock;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
@@ -48,16 +49,18 @@ class TableItem extends DataObject
         'Cell8.Summary' => 'Col 8',
     ];
 
-    public function getCMSFields()
+    public function getCMSFields(): FieldList
     {
         $fields = parent::getCMSFields();
 
         $block = TableBlock::get_by_id($this->TableBlockID);
+        if (!$block) {
+            return $fields;
+        }
         $cols = $block->NumberOfColumns;
         foreach (range(1, $cols) as $i) {
             $column = 'Cell' . $i;
             $colField = HTMLEditorField::create($column)
-                ->setEditorConfig('cellTinyMCE')
                 ->setRows(8);
             $fields->replaceField($column, $colField);
         }
@@ -80,14 +83,18 @@ class TableItem extends DataObject
      *
      * @return ArrayList
      */
-    public function getCells()
+    public function getCells(): ArrayList
     {
+        $block = $this->TableBlock();
+        if (!$block || !$block->exists()) {
+            return ArrayList::create();
+        }
         $cells = [];
-        foreach (range(1, $this->TableBlock->NumberOfColumns) as $cell) {
+        foreach (range(1, $block->NumberOfColumns) as $cell) {
             $cells[] = DBField::create_field('HTMLText', $this->{'Cell' . $cell});
         }
         $cells = ArrayList::create($cells);
-        $this->TableBlock->extend('formatCells', $cells);
+        $block->extend('formatCells', $cells);
 
         return $cells;
     }
@@ -97,30 +104,34 @@ class TableItem extends DataObject
      *
      * @return bool
      */
-    public function getCellIsHeader($Position)
+    public function getCellIsHeader(int $Position): bool
     {
-        return $this->TableBlock->FirstColumnIsHeader == true && $Position == 1;
+        $block = $this->TableBlock();
+        return $block && $block->FirstColumnIsHeader && $Position === 1;
     }
 
     /**
      * Get the header list if the FirstColumnIsHeader is checked
      *
-     * @return ArrayList
+     * @return ?ArrayList
      */
-    public function getHeadingRow()
+    public function getHeadingRow(): ?ArrayList
     {
-        if ($this->TableBlock->FirstRowIsHeader == true) {
-            return $this->TableBlock->TableItems()->First()->getCells();
+        $block = $this->TableBlock();
+        if ($block && $block->FirstRowIsHeader) {
+            return $block->TableItems()->First()?->getCells();
         }
+        return null;
     }
 
     /**
      * Get the width of the columns
      *
-     * @return ArrayList
+     * @return mixed
      */
-    public function getColumnProportions($index)
+    public function getColumnProportions(int $index): mixed
     {
-        return $this->TableBlock->{'PropCol' . $index};
+        $block = $this->TableBlock();
+        return $block ? $block->{'PropCol' . $index} : null;
     }
 }
