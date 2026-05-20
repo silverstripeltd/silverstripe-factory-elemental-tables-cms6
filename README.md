@@ -9,11 +9,11 @@ An elemental block to enable more control over the responsiveness of tables.
 "repositories": [
     {
         "type": "vcs",
-        "url": "git@github.com:signify-nz/silverstripe-factory-elemental-tables.git"
+        "url": "git@github.com:signify-nz/silverstripe-factory-elemental-tables-cms6.git"
     }
 ],
 "require": {
-    "signify-nz/silverstripe-factory-elemental-tables": "^1"
+    "signify-nz/silverstripe-factory-elemental-tables": "^2"
 }
 ```
 
