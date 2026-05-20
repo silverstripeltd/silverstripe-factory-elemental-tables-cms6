@@ -3,9 +3,8 @@
 namespace Signify\Factory\Models;
 
 use Signify\Factory\Models\TableBlock;
-use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
 
@@ -17,7 +16,7 @@ class TableItem extends DataObject
 
     private static $plural_name = 'Table Items';
 
-    private static $description = 'Table Item';
+    private static $class_description = 'Table Item';
 
     private static $db = [
         'Cell1' => 'HTMLText',
@@ -49,18 +48,16 @@ class TableItem extends DataObject
         'Cell8.Summary' => 'Col 8',
     ];
 
-    public function getCMSFields(): FieldList
+    public function getCMSFields()
     {
         $fields = parent::getCMSFields();
 
         $block = TableBlock::get_by_id($this->TableBlockID);
-        if (!$block) {
-            return $fields;
-        }
         $cols = $block->NumberOfColumns;
         foreach (range(1, $cols) as $i) {
             $column = 'Cell' . $i;
             $colField = HTMLEditorField::create($column)
+                ->setEditorConfig('cellTinyMCE')
                 ->setRows(8);
             $fields->replaceField($column, $colField);
         }
@@ -83,18 +80,14 @@ class TableItem extends DataObject
      *
      * @return ArrayList
      */
-    public function getCells(): ArrayList
+    public function getCells()
     {
-        $block = $this->TableBlock();
-        if (!$block || !$block->exists()) {
-            return ArrayList::create();
-        }
         $cells = [];
-        foreach (range(1, $block->NumberOfColumns) as $cell) {
+        foreach (range(1, $this->TableBlock->NumberOfColumns) as $cell) {
             $cells[] = DBField::create_field('HTMLText', $this->{'Cell' . $cell});
         }
         $cells = ArrayList::create($cells);
-        $block->extend('formatCells', $cells);
+        $this->TableBlock->extend('formatCells', $cells);
 
         return $cells;
     }
@@ -104,34 +97,30 @@ class TableItem extends DataObject
      *
      * @return bool
      */
-    public function getCellIsHeader(int $Position): bool
+    public function getCellIsHeader($Position)
     {
-        $block = $this->TableBlock();
-        return $block && $block->FirstColumnIsHeader && $Position === 1;
+        return $this->TableBlock->FirstColumnIsHeader == true && $Position == 1;
     }
 
     /**
      * Get the header list if the FirstColumnIsHeader is checked
      *
-     * @return ?ArrayList
+     * @return ArrayList
      */
-    public function getHeadingRow(): ?ArrayList
+    public function getHeadingRow()
     {
-        $block = $this->TableBlock();
-        if ($block && $block->FirstRowIsHeader) {
-            return $block->TableItems()->First()?->getCells();
+        if ($this->TableBlock->FirstRowIsHeader == true) {
+            return $this->TableBlock->TableItems()->First()->getCells();
         }
-        return null;
     }
 
     /**
      * Get the width of the columns
      *
-     * @return mixed
+     * @return ArrayList
      */
-    public function getColumnProportions(int $index): mixed
+    public function getColumnProportions($index)
     {
-        $block = $this->TableBlock();
-        return $block ? $block->{'PropCol' . $index} : null;
+        return $this->TableBlock->{'PropCol' . $index};
     }
 }

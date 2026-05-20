@@ -6,15 +6,20 @@ use DNADesign\Elemental\Models\BaseElement;
 use Signify\Factory\Models\TableItem;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
-use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
+use SilverStripe\Forms\GridField\GridFieldAddNewButton;
+use SilverStripe\Forms\GridField\GridFieldConfig;
+use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
+use SilverStripe\Forms\GridField\GridFieldEditButton;
 use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\TextareaField;
-use SilverStripe\ORM\DataList;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\View\Requirements;
+use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use UndefinedOffset\SortableGridField\Forms\GridFieldSortableRows;
 
 class TableBlock extends BaseElement
@@ -25,9 +30,9 @@ class TableBlock extends BaseElement
 
     private static $plural_name = 'Table blocks';
 
-    private static $description = 'Table block';
+    private static $class_description = 'Table block';
 
-    private static $icon = 'font-icon-block-table-data';
+    private static $cms_icon_class = 'font-icon-block-table-data';
 
     private static $db = [
         'TableDescription' => 'HTMLText',
@@ -76,13 +81,14 @@ class TableBlock extends BaseElement
         'LastRowIsFooter' => false,
     ];
 
-    public function getCMSFields(): FieldList
+    public function getCMSFields()
     {
         $fields = parent::getCMSFields();
 
         $tableDescription = HTMLEditorField::create(
             'TableDescription'
         );
+        $tableDescription->setEditorConfig('tableTinyMCE');
         $tableDescription->setRows(6);
         $fields->replaceField('TableDescription', $tableDescription);
 
@@ -201,7 +207,7 @@ class TableBlock extends BaseElement
      * Returns a preview of the selected settings for display in the CMS.
      * @return string
      */
-    public function getCMSPreview(): string
+    public function getCMSPreview()
     {
         if ($numRows = $this->TableItems()->count()) {
             $plurality = $numRows == 1 ? '' : 's';
@@ -214,7 +220,7 @@ class TableBlock extends BaseElement
     /**
      * {@inheritDoc}
      */
-    protected function provideBlockSchema(): array
+    protected function provideBlockSchema()
     {
         $blockSchema = parent::provideBlockSchema();
         $blockSchema['content'] = $this->getCMSPreview();
@@ -224,7 +230,7 @@ class TableBlock extends BaseElement
     /**
      * {@inheritDoc}
      */
-    public function getType(): string
+    public function getType()
     {
         return 'Table';
     }
@@ -232,12 +238,12 @@ class TableBlock extends BaseElement
     /**
      * {@inheritDoc}
      */
-    public function inlineEditable(): bool
+    public function inlineEditable()
     {
         return false;
     }
 
-    public function getTotalColumns(): int
+    public function getTotalColumns()
     {
         return $this->NumberOfColumns;
     }
@@ -247,10 +253,11 @@ class TableBlock extends BaseElement
      *
      * Not include the header and footer
      *
-     * @return DataList
+     * @return ArrayList
      */
-    public function getBody(): DataList
+    public function getBody()
     {
+       
         $body = $this->TableItems();
 
         if ($body->count() > 0) {
